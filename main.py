@@ -318,12 +318,20 @@ if __name__ == '__main__':
 
                                 triplets = []
                                 if args.use_3shot:
+                                    path_cnt = 0
                                     for i, (tail, score) in enumerate(zip(top_k_cand_ent, top_k_cand_ent_score)):
+                                        if tail not in mp_entity_to_triple:
+                                            continue
+                                        path_cnt += 1
                                         path_str = ' '.join(mp_entity_to_triple[tail])
-                                        line = f"[Path {i+1}] {path_str} -> Candidate entity: [\"{tail}\"]"
+                                        line = f"[Path {path_cnt}] {path_str} -> Candidate entity: [\"{tail}\"]"
                                         triplets.append(line)
-                                    triplets = '\n'.join(triplets)
-                                    input_text = SUBQUESTION_ANSWERING_new.format(Q=sub_Q + '?', T=triplets)
+                                    if not triplets:
+                                        print("Warning: No valid paths found in dictionary! Using empty context.")
+                                        triples_str = "No context available."
+                                    else:
+                                        triplets_str = '\n'.join(triplets)
+                                    input_text = SUBQUESTION_ANSWERING_new.format(Q=sub_Q + '?', T=triplets_str)
                                 else:
                                     for tail_entity, ent_score in zip(top_k_cand_ent, top_k_cand_ent_score):
                                         triplets.append(' '.join(mp_entity_to_triple[tail_entity])+'\t'+f'Candidate entity : ["{mp_entity_to_triple[tail_entity][-1]}"]')
